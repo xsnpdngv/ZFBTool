@@ -1,9 +1,11 @@
+#!/usr/bin/python3
 import glob
 import os
 import struct
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image
+from src import proc_thmb
 
 
 def exit_handler():
@@ -268,7 +270,7 @@ class Application(tk.Frame):
             # Iterate over all .png files in the input folder
             for png_file in glob.glob(input_folder + '/*.png'):
                 png_filename = os.path.basename(png_file)
-                rom_filename = os.path.join(input_folder, png_filename.rsplit('.', 1)[0] + '.zip')
+                rom_filename = os.path.join(input_folder, png_filename.rsplit('.', 1)[0] + '.zip')  ####
 
                 # Skip if corresponding .zip file is not found
                 if not os.path.exists(rom_filename):
@@ -278,7 +280,18 @@ class Application(tk.Frame):
                 try:
                     # Process the .png file and create the .zfb file
                     with Image.open(png_file) as img:
-                        img = img.resize(thumb_size)
+                        #img = img.resize(thumb_size, resample=Image.BICUBIC)
+                        img = img.thumbnail((thumb_height, thumb_height), Image.BICUBIC)
+                        img = proc_thmb.crop(img, thumb_width, thumb_height, 'top-right')
+                        img = proc_thmb.add_text(img, text="ASDF",
+                                                 #position=(7, 0),
+                                                 font_path='../assets/Lalezar-Regular.ttf',
+                                                 #font_size=20,
+                                                 font_color=(255,255,255),
+                                                 #outline_color=GBA_COLOR,
+                                                 outline_color=(0,0,0),
+                                                 outline_width=1
+                                                 )
                         img = img.convert("RGB")
 
                         raw_data = []
@@ -411,7 +424,9 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 icon_path = os.path.join(script_dir, 'zfbtool.ico')
 
 # Define the size of the thumbnail
-thumb_size = (144, 208)
+thumb_height = 208
+thumb_width = 144
+thumb_size = (thumb_width, thumb_height)
 
 # Create the application window
 root = tk.Tk()
